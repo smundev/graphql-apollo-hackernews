@@ -1,0 +1,13 @@
+{
+  "include": ["src"],
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["es2020"],
+    "esModuleInterop": true
+  },
+  "ts-node": {
+    "esm": true
+  }
+}
