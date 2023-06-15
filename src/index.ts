@@ -36,7 +36,7 @@ const typeDefs = `#graphql
     }
 
     type Query {
-      GetTopStories: [Story]
+      GetTopStories(offset: Int,limit: Int): [Story]
       GetStory(id: Int!): Story
       GetComments(ids: [Int]!): [Comment]
     }
@@ -44,10 +44,13 @@ const typeDefs = `#graphql
 
 const resolvers = {
   Query: {
-    GetTopStories: async () => {
+    GetTopStories: async (_, args) => {
       const { data } = await axios.get(`${hackernewsURL}${topStoriesParam}`);
+      const { offset, limit } = args;
+      const start = offset * limit;
+      const end = start + limit;
       const stories = await Promise.all(
-        data.slice(0, 30).map(async (id: number) => {
+        data.slice(start, end).map(async (id: number) => {
           const { data } = await axios.get(
             `${hackernewsURL}${topStoryDetailParam}${id}.json`
           );
@@ -56,14 +59,14 @@ const resolvers = {
       );
       return stories;
     },
-    GetStory: async (parent: any, args: any) => {
+    GetStory: async (_, args) => {
       const { data } = await axios.get(
         `${hackernewsURL}${topStoryDetailParam}${args.id}.json`
       );
 
       return data;
     },
-    GetComments: async (parent: any, args: any) => {
+    GetComments: async (_, args) => {
       const comments = await Promise.all(
         args.ids.map(async (id: number) => {
           const { data } = await axios.get(
@@ -82,6 +85,7 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
+``;
 
 startStandaloneServer(server).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
